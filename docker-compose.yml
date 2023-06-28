@@ -1,50 +1,31 @@
 version: '3'
 services:
-  postgres:
-    image: postgres:latest
-    restart: always
-    environment:
-      - POSTGRES_PASSWORD=postgres_password
-  redis:
-    image: redis:latest
   nginx:
-    restart: always
-    build:
-      dockerfile: Dockerfile.dev
-      context: ./nginx
+    image: dantasaf/multi-nginx-10-14
+    mem_limit: 128m
+    hostname: nginx
     ports:
-      - 3050:80
-  api:
-    build:
-      dockerfile: Dockerfile.dev
-      context: ./server
-    volumes:
-      - /home/node/app/node_modules
-      - ./server:/home/node/app
+      - 80:80
+  server:
+    image: dantasaf/multi-server-10-14
+    mem_limit: 128m
+    hostname: api
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - PGUSER=postgres
-      - PGPASSWORD=postgres_password
-      - PGDATABASE=postgres
-      - PGHOST=postgres
-      - PGPORT=5432
+      - REDIS_HOST=$REDIS_HOST
+      - REDIS_PORT=$REDIS_PORT
+      - PGUSER=$PGUSER
+      - PGPASSWORD=$PGPASSWORD
+      - PGDATABASE=$PGDATABASE
+      - PGHOST=$PGHOST
+      - PGPORT=$PGPORT
   client:
-    build:
-      dockerfile: Dockerfile.dev
-      context: ./client
-    volumes:
-      - /home/node/app/node_modules
-      - ./client:/home/node/app
-    environment:
-      - WDS_SOCKET_PORT=0
+    image: dantasaf/multi-client-10-14
+    mem_limit: 128m
+    hostname: client
   worker:
-    build:
-      dockerfile: Dockerfile.dev
-      context: ./worker
-    volumes:
-      - /home/node/app/node_modules
-      - ./worker:/home/node/app
+    image: dantasaf/multi-worker-10-14
+    mem_limit: 128m
+    hostname: worker
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - REDIS_HOST=$REDIS_HOST
+      - REDIS_PORT=$REDIS_PORT
